@@ -29,7 +29,7 @@ def recommend_music(request):
         messages=[{"role": "user", "content": prompt}]
     )
 
-    mood_genre = gpt_response["choices"][0]["message"]["content"].strip()
+    mood_genre = gpt_response["mood_summary"][0]["message"]["content"].strip()
 
     # Spotify search
     sp = Spotify(auth_manager=SpotifyClientCredentials(
