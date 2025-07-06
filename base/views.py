@@ -10,45 +10,78 @@ load_dotenv()
 
 @api_view(['POST'])
 def recommend_music(request):
-    print("Request data:", request.data)
+    print("Request data:", request.data)  # For debugging
+
     mood = request.data.get("mood", "").strip()
     journal = request.data.get("journal", "").strip()
 
-    prompt = f"""
-    Based on the following mood and journal, suggest a music genre and matching Spotify playlist idea:
-    Mood: {mood}
-    Journal: {journal}
-    Please reply with only a genre or keyword.
-    """
+    # ✅ Validate input
+    if not mood or not journal:
+        print("❌ Missing mood or journal")
+        return Response({"error": "Missing mood or journal"}, status=400)
 
-    # OpenRouter setup
+    # ✅ Use different prompt for chatbot vs music mode
+    if mood.lower() == "chat":
+        prompt = f"""
+        You are a supportive mental health assistant.
+        Respond to the user's journal entry with encouragement and empathy.
+
+        Journal: {journal}
+        """
+    else:
+        prompt = f"""
+        Based on the user's mood (emoji or word) and journal entry,
+        suggest one music genre (like 'lofi', 'pop', 'ambient'):
+
+        Mood: {mood}
+        Journal: {journal}
+
+        Only reply with one word (the genre or keyword).
+        """
+
+    # ✅ OpenRouter setup
     openai.api_key = os.getenv("OPENROUTER_API_KEY")
     openai.api_base = "https://openrouter.ai/api/v1"
 
     headers = {
-    "HTTP-Referer": "https://github.com/Sujana001/MindmuseAI-backend",  # or your GitHub repo / Firebase hosting URL
-    "X-Title": "MindmuseAI"
-}
+        "HTTP-Referer": "https://github.com/Sujana001/MindmuseAI-backend",
+        "X-Title": "MindmuseAI"
+    }
 
-    gpt_response = openai.ChatCompletion.create(
-        model="mistralai/mistral-7b",
-        messages=[{"role": "user", "content": prompt}],
-        headers=headers
-    )
+    try:
+        gpt_response = openai.ChatCompletion.create(
+            model="mistralai/mistral-7b",
+            messages=[{"role": "user", "content": prompt}],
+            headers=headers
+        )
+        mood_genre = gpt_response["choices"][0]["message"]["content"].strip()
+    except Exception as e:
+        print("❌ OpenRouter Error:", str(e))
+        return Response({"error": "AI generation failed"}, status=500)
 
-    mood_genre = gpt_response["choices"][0]["message"]["content"].strip()
+    # ✅ If chatbot, return only GPT reply
+    if mood.lower() == "chat":
+        return Response({"mood_summary": mood_genre})
 
-    # Spotify search
-    sp = Spotify(auth_manager=SpotifyClientCredentials(
-        client_id=os.getenv("SPOTIFY_CLIENT_ID"),
-        client_secret=os.getenv("SPOTIFY_CLIENT_SECRET")
-    ))
+    # ✅ Spotify search
+    try:
+        sp = Spotify(auth_manager=SpotifyClientCredentials(
+            client_id=os.getenv("SPOTIFY_CLIENT_ID"),
+            client_secret=os.getenv("SPOTIFY_CLIENT_SECRET")
+        ))
 
-    results = sp.search(q=mood_genre, type='playlist', limit=3)
-    playlists = [
-        {"name": p["name"], "url": p["external_urls"]["spotify"]}
-        for p in results["playlists"]["items"]
-    ]
+        results = sp.search(q=mood_genre, type='playlist', limit=3)
+        playlists = [
+            {"name": p["name"], "url": p["external_urls"]["spotify"]}
+            for p in results["playlists"]["items"]
+        ]
+    except Exception as e:
+        print("❌ Spotify error:", e)
+        playlists = []
+
+    # ✅ Fallback if nothing found
+    if not playlists:
+        playlists = [{"name": "Open Spotify", "url": "https://open.spotify.com"}]
 
     return Response({
         "mood_summary": mood_genre,
