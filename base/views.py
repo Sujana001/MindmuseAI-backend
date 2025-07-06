@@ -11,8 +11,8 @@ load_dotenv()
 @api_view(['POST'])
 def recommend_music(request):
     print("Request data:", request.data)
-    mood = request.data.get("mood", "")
-    journal = request.data.get("journal", "")
+    mood = request.data.get("mood", "").strip()
+    journal = request.data.get("journal", "").strip()
 
     prompt = f"""
     Based on the following mood and journal, suggest a music genre and matching Spotify playlist idea:
