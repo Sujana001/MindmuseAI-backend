@@ -10,6 +10,7 @@ load_dotenv()
 
 @api_view(['POST'])
 def recommend_music(request):
+    print("Request data:", request.data)
     mood = request.data.get("mood", "")
     journal = request.data.get("journal", "")
 
