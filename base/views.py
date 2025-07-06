@@ -25,9 +25,15 @@ def recommend_music(request):
     openai.api_key = os.getenv("OPENROUTER_API_KEY")
     openai.api_base = "https://openrouter.ai/api/v1"
 
+    headers = {
+    "HTTP-Referer": "https://github.com/Sujana001/MindmuseAI-backend",  # or your GitHub repo / Firebase hosting URL
+    "X-Title": "MindmuseAI"
+}
+
     gpt_response = openai.ChatCompletion.create(
         model="mistralai/mistral-7b",
-        messages=[{"role": "user", "content": prompt}]
+        messages=[{"role": "user", "content": prompt}],
+        headers=headers
     )
 
     mood_genre = gpt_response["choices"][0]["message"]["content"].strip()
