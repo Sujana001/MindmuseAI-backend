@@ -5,6 +5,10 @@ from rest_framework.response import Response
 from spotipy import Spotify
 from spotipy.oauth2 import SpotifyClientCredentials
 from dotenv import load_dotenv
+from django.http import HttpResponse
+
+def home(request):
+    return HttpResponse("Welcome to the MindmuseAI backend")
 
 load_dotenv()
 

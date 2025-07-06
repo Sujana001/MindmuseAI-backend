@@ -33,8 +33,7 @@ SECRET_KEY = 'django-insecure-e=ercl)$bqhwn+ldahr@3)75&km-j8_ckqtuk=5hjq!xxyq%m*
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ["mindmuseai-backend.onrender.com"]
-
+ALLOWED_HOSTS = ['mindmuseai-backend-2.onrender.com']
 
 # Application definition
 
