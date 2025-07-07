@@ -54,7 +54,7 @@ def recommend_music(request):
 
     try:
         gpt_response = client.chat.completions.create(
-            model="mistralai/mistral-7b",
+            model="mistralai/mistral-7b-instruct",
             messages=[{"role": "user", "content": prompt}],
         )
         mood_genre = gpt_response.choices[0].message.content.strip()
