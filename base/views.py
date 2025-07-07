@@ -71,7 +71,7 @@ def recommend_music(request):
             client_secret=os.getenv("SPOTIFY_CLIENT_SECRET")
         ))
 
-        results = sp.search(q=mood_genre, type='playlist', limit=3)
+        results = sp.search(q=f'playlist:{mood_genre}', type='playlist', limit=3)
         playlists = [
             {"name": p["name"], "url": p["external_urls"]["spotify"]}
             for p in results["playlists"]["items"]
@@ -81,7 +81,8 @@ def recommend_music(request):
         playlists = []
 
     if not playlists:
-        playlists = [{"name": "Open Spotify", "url": "https://open.spotify.com"}]
+        playlists = [{"name": f"Search {mood_genre} Playlists on Spotify",
+        "url": f"https://open.spotify.com/search/{mood_genre}%20playlists"}]
 
     return Response({
         "mood_summary": mood_genre,
